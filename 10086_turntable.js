@@ -4,14 +4,11 @@
 自动做浏览任务 + 抽奖。
 Token 从 /user/info 响应中的 loginUid 字段自动获取
 
-[rewrite_local]
-^https://wx\.10086\.cn/.* url script-request-header https://raw.githubusercontent.com/1009394958/10086-checkin/main/10086_token_harvester.js
+★ 重写订阅（采集 Token+Cookie）:
+https://raw.githubusercontent.com/1009394958/10086-checkin/main/10086_qwhd_rewrite.conf
 
 [task_local]
 0 10 * * * https://raw.githubusercontent.com/1009394958/10086-checkin/main/10086_turntable.js, tag=10086转盘, enabled=true
-
-[mitm]
-hostname = wx.10086.cn
 */
 (function () {
   var BASE = "https://wx.10086.cn/qwhdhub";
@@ -27,7 +24,7 @@ hostname = wx.10086.cn
     "Cookie": ck,
     "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
     "Accept": "application/json, text/plain, */*",
-    "Referer": "https://wx.10086.cn/qwhdhub/turntable/1025041514"
+    "Referer": "https://wx.10086.cn/qwhdhub/turntable/1025041514" + (tk ? "?token=" + encodeURIComponent(tk) : "")
   };
   var COOKIE_KEYS = ["QWHD_SESSION_TOKEN", "yx", "touch_id", "grayscale"];
 
@@ -41,6 +38,14 @@ hostname = wx.10086.cn
     if (v === null || v === undefined) return "null";
     if (typeof v === "string") return v.length > 120 ? v.substring(0, 120) + "…" : v;
     try { var s = JSON.stringify(v); return s.length > 300 ? s.substring(0, 300) + "…" : s; } catch(e) { return String(v); }
+  }
+
+  // 解析 remain API 返回的 data 字段，兼容数字和对象两种格式
+  // API 可能返回 data:3（数字）或 data:{remain:3}（对象）
+  function parseRemainData(d) {
+    if (typeof d === "number") return d;
+    if (d && typeof d === "object") return d.remain || d.count || d.chance || 0;
+    return Number(d) || 0;
   }
 
   // 从响应头更新 Cookie
@@ -213,11 +218,14 @@ hostname = wx.10086.cn
     log("\n▶▶ 步骤2/4: 查询剩余抽奖次数");
     var remain = await apiPost("/lottery/remain", {});
     var n = 0;
-    if (remain && remain.success) {
-      n = remain.data || 0;
+    // API 可能返回 {code:"SUCCESS", success:true, data:N} 两种格式都兼容
+    var remainOk = remain && (remain.success === true || remain.code === "SUCCESS");
+    if (remainOk) {
+      n = parseRemainData(remain.data);
       log("  ✔ 剩余抽奖次数: " + n);
     } else {
-      log("  ✗ 查询失败, 响应=" + fmt(remain));
+      log("  ✗ 查询失败, 完整响应=" + fmt(remain));
+      if (remain) log("     code=" + remain.code + " success=" + remain.success + " msg=" + (remain.msg || ""));
     }
     sep();
 
@@ -270,8 +278,9 @@ hostname = wx.10086.cn
       sep();
       log("  → 重新查询抽奖次数…");
       remain = await apiPost("/lottery/remain", {});
-      if (remain && remain.success) {
-        n = remain.data || 0;
+      var remainOk2 = remain && (remain.success === true || remain.code === "SUCCESS");
+      if (remainOk2) {
+        n = parseRemainData(remain.data);
       }
       log("  ✔ 做任务后剩余次数: " + n);
     } else {
