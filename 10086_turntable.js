@@ -2,7 +2,7 @@
 10086 幸运转转转 — for Quantumult X
 ====================================
 自动做浏览任务 + 抽奖。
-需要: 10086_token_harvester.js 捕获的 QWHD Cookie + URL Token
+Token 从 /user/info 响应中的 loginUid 字段自动获取，不需依赖 URL 捕获
 
 [rewrite_local]
 ^https://wx\.10086\.cn/.* url script-request-header https://raw.githubusercontent.com/1009394958/10086-checkin/main/10086_token_harvester.js
@@ -64,11 +64,20 @@ hostname = wx.10086.cn
     if (tk) log("  Token: " + tk.substring(0, 24) + "...");
     log("═══════════════════════════");
 
-    // 1. 查用户信息
+    // 1. 查用户信息（同时提取 loginUid 作为 token）
     var userInfo = await apiGet("/user/info");
     if (userInfo && userInfo.success) {
-      var mobile = userInfo.data.nickName || userInfo.data.mobile || "";
+      var d = userInfo.data || {};
+      var mobile = d.nickName || d.mobile || "";
       log("  用户: " + mobile);
+      // loginUid = SSO Token，直接从接口获取，不需要依赖 URL 捕获
+      if (d.loginUid) {
+        tk = d.loginUid;
+        $prefs.setValueForKey(tk, "10086_qwhd_token");
+        log("  Token: " + tk.substring(0, 24) + "...");
+      }
+    } else {
+      log("  ⚠️ 获取用户信息失败，接口可能返回了非 JSON");
     }
 
     // 2. 查剩余次数
