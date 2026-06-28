@@ -2,9 +2,13 @@
 10086 幸运转转转 — for Quantumult X
 ====================================
 自动做浏览任务 + 抽奖。
-Token 从 /user/info 响应中的 loginUid 字段自动获取
+Token 由脚本第1步自动从 /user/info 的 loginUid 字段获取。
 
-★ 重写订阅（采集 Token+Cookie）:
+使用方式：
+1. 添加下面重写订阅 → 打开 App 转盘页面 → 自动采集 Cookie
+2. 添加下面任务脚本 → 每天自动签到
+
+★ Cookie 采集重写订阅:
 https://raw.githubusercontent.com/1009394958/10086-checkin/main/10086_qwhd_rewrite.conf
 
 [task_local]
