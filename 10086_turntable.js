@@ -1,8 +1,8 @@
 /*
 10086 幸运转转转 — for Quantumult X
 ====================================
-自动完成任务 + 抽奖。需要先捕获 QWHD Cookie。
-依赖: 10086_token_harvester.js 捕获的 Cookie
+自动完成任务 + 抽奖。
+需要: 10086_token_harvester.js 捕获的 QWHD Cookie + URL Token
 
 [rewrite_local]
 ^https://wx\.10086\.cn/.* url script-request-header https://raw.githubusercontent.com/1009394958/10086-checkin/main/10086_token_harvester.js
@@ -16,6 +16,7 @@ hostname = wx.10086.cn
 (function () {
   var BASE = "https://wx.10086.cn/qwhdhub";
   var ck = $prefs.valueForKey("10086_qwhd_cookie") || "";
+  var tk = $prefs.valueForKey("10086_qwhd_token") || "";
 
   if (!ck) {
     $notify("10086 转盘 ⚠️", "缺少 QWHD Cookie", "请先在 App 中打开转盘页面");
@@ -35,6 +36,7 @@ hostname = wx.10086.cn
   async function main() {
     log("═══════════════════════════");
     log("  10086 幸运转转转");
+    if (tk) log("  Token: " + tk.substring(0, 24) + "...");
     log("═══════════════════════════");
 
     // 1. 检查剩余次数
@@ -57,6 +59,9 @@ hostname = wx.10086.cn
             await doBrowseTask(t.id || t.taskId);
           }
         }
+      } else if (!tk) {
+        log("  ⚠️ 获取任务列表失败，缺少 URL token");
+        log("  提示: 重新在 App 中打开转盘页面以捕获 token");
       }
       // 重新查次数
       remain = await apiPost("/lottery/remain", {});
@@ -101,7 +106,6 @@ hostname = wx.10086.cn
     $done();
   }
 
-  // POST /lottery/remain
   function apiPost(path, data) {
     try {
       var r = $task.fetch({
@@ -119,7 +123,6 @@ hostname = wx.10086.cn
     }
   }
 
-  // GET
   function apiGet(path) {
     try {
       var r = $task.fetch({
@@ -141,8 +144,11 @@ hostname = wx.10086.cn
     }
   }
 
+  // 获取任务列表（需要 URL token）
   function getTaskList() {
-    return apiGet("/task/list?backUrl=" + encodeURIComponent(BASE + "/turntable/1025041514") + "&token=" + encodeURIComponent(ck));
+    if (!tk) return null;
+    var backUrl = encodeURIComponent(BASE + "/turntable/1025041514");
+    return apiGet("/task/list?backUrl=" + backUrl + "&token=" + encodeURIComponent(tk));
   }
 
   function doBrowseTask(taskId) {
