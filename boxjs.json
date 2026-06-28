@@ -1,7 +1,7 @@
 {
   "id": "10086.checkin",
   "name": "中国移动签到",
-  "description": "中国移动每日签到BoxJS配置",
+  "description": "中国移动每日签到 - BoxJS管理面板",
   "author": "github.com/1009394958",
   "icon": "https://www.10086.cn/favicon.ico",
   "apps": [
@@ -12,9 +12,8 @@
         "10086_cookie",
         "10086_xtoken",
         "10086_rtoken",
-        "10086_enc_body_auto",
-        "10086_enc_body_token",
-        "10086_enc_body_user",
+        "10086_body_enc",
+        "10086_qwhd_cookie",
         "10086_last_update"
       ],
       "settings": [
@@ -23,7 +22,7 @@
           "name": "登录Cookie",
           "val": "",
           "type": "textarea",
-          "desc": "从中国移动App捕获的Cookie，包含UID和JSESSIONID"
+          "desc": "包含 JSESSIONID 和 UID，由10086_capture.js自动捕获"
         },
         {
           "id": "10086_xtoken",
@@ -37,21 +36,28 @@
           "name": "r-token",
           "val": "",
           "type": "text",
-          "desc": "最新的响应Token，用于刷新x-token"
+          "desc": "最新的响应Token，自动更新x-token"
         },
         {
-          "id": "10086_enc_body_auto",
-          "name": "autoLogin加密体",
+          "id": "10086_body_enc",
+          "name": "加密请求体",
           "val": "",
           "type": "textarea",
-          "desc": "autoLogin请求的加密body"
+          "desc": "从autoLogin/getUserInformation捕获的加密body"
         },
         {
-          "id": "10086_enc_body_token",
-          "name": "getBigNetToken加密体",
+          "id": "10086_qwhd_cookie",
+          "name": "QWHD Cookie",
           "val": "",
           "type": "textarea",
-          "desc": "getBigNetToken请求的加密body"
+          "desc": "幸运转转转Web API的会话Cookie，打开转盘页面自动捕获"
+        },
+        {
+          "id": "10086_last_update",
+          "name": "最后更新",
+          "val": "",
+          "type": "text",
+          "desc": "上次捕获凭证的时间戳"
         }
       ],
       "author": "github.com/1009394958"
