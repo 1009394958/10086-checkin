@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         中国移动统一捕获（Cookie + 加密体 + 余额查询）
 // @namespace    https://github.com/1009394958/10086-checkin
-// @version      1.1.0
+// @version      1.2.0
 // @description  统一捕获中国移动App的Cookie/Token/加密请求体/余额API
 // @author       github.com/1009394958
 // @icon         https://www.10086.cn/favicon.ico
 // ==/UserScript==
 
 /**
- * Quantumult X 中国移动统一捕获脚本 v1.1
+ * Quantumult X 中国移动统一捕获脚本 v1.2
  *
  * 兼容三种 rewrite 模式：
  *   script-request-header → 捕获Cookie、x-token
@@ -16,12 +16,12 @@
  *   script-response-body  → 捕获响应头r-token
  *
  * [rewrite_local] 配置：
- * ^https:\/\/client\.app\.coc\.10086\.cn\/biz-orange\/LN\/uamonekeylogin\/autoLogin url script-request-header 10086_capture.js
- * ^https:\/\/clientaccess\.10086\.cn\/biz-orange\/BN\/userInformationService\/getUserInformation url script-request-header 10086_capture.js
- * ^https:\/\/client\.app\.coc\.10086\.cn\/leadeon-abilityopen-biz\/BN\/obtainToken\/getBigNetToken url script-request-header 10086_capture.js
- * ^https:\/\/clientaccess\.10086\.cn\/biz-orange\/BN\/scoreQueryService\/getScoreQuery url script-request-header 10086_capture.js
- * ^https:\/\/clientaccess\.10086\.cn\/biz-orange\/BN\/realFeeQuery\/getRealFee url script-request-header 10086_capture.js
- * ^https:\/\/clientaccess\.10086\.cn\/biz-orange\/BH\/newPlanRemainQry\/getNewPlanRemainQry url script-request-header 10086_capture.js
+ * ^https:\\/\\/client\\.app\\.coc\\.10086\\.cn\\/biz-orange\\/LN\\/uamonekeylogin\\/autoLogin url script-request-header 10086_capture.js
+ * ^https:\\/\\/clientaccess\\.10086\\.cn\\/biz-orange\\/BN\\/userInformationService\\/getUserInformation url script-request-header 10086_capture.js
+ * ^https:\\/\\/client\\.app\\.coc\\.10086\\.cn\\/leadeon-abilityopen-biz\\/BN\\/obtainToken\\/getBigNetToken url script-request-header 10086_capture.js
+ * ^https:\\/\\/clientaccess\\.10086\\.cn\\/biz-orange\\/BN\\/scoreQueryService\\/getScoreQuery url script-request-header 10086_capture.js
+ * ^https:\\/\\/clientaccess\\.10086\\.cn\\/biz-orange\\/BN\\/realFeeQuery\\/getRealFee url script-request-header 10086_capture.js
+ * ^https:\\/\\/clientaccess\\.10086\\.cn\\/biz-orange\\/BH\\/newPlanRemainQry\\/getNewPlanRemainQry url script-request-header 10086_capture.js
  *
  * [mitm]
  * hostname = client.app.coc.10086.cn, clientaccess.10086.cn, wx.10086.cn
@@ -34,7 +34,8 @@ const KEY = {
   UID: '10086_uid',
   RTOKEN: '10086_rtoken',
   BODY_ENC: '10086_body_enc',
-  QWHD_COOKIE: '10086_qwhd_cookie'
+  QWHD_COOKIE: '10086_qwhd_cookie',
+  LAST_UPDATE: '10086_last_update'
 };
 
 function main() {
@@ -89,6 +90,12 @@ function main() {
   if (url.includes('wx.10086.cn') && cookie.includes('QWHD')) {
     $prefs.setValueForKey(cookie, KEY.QWHD_COOKIE);
     captured.push('QWHD');
+  }
+
+  // ── 记录更新时间戳 ──
+  if (captured.length > 0) {
+    const now = new Date().toLocaleString('zh-CN', { hour12: false });
+    $prefs.setValueForKey(now, KEY.LAST_UPDATE);
   }
 
   if (captured.length > 0) {
