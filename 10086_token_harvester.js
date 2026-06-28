@@ -17,10 +17,12 @@ const COOKIE_KEY = "10086_qwhd_cookie";
     try {
       var body = typeof $response.body === "string" ? $response.body : JSON.stringify($response.body);
       var d = JSON.parse(body);
-      var token = d.data && d.data.loginUid || null;
+      var data = d.data || {};
+      var token = data.loginUid || null;
+      var mobile = data.mobile || "";
       if (token) {
         $prefs.setValueForKey(token.trim(), TOKEN_KEY);
-        $notify("10086 转盘 ✓", "Token 获取成功", token.substring(0, 20) + "...");
+        $notify("10086 转盘 ✓", mobile ? mobile : "Token 获取成功", token.substring(0, 20) + "...");
       }
     } catch (e) {
       console.log("10086 Token 解析异常: " + e.message);
