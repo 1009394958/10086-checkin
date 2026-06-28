@@ -102,7 +102,6 @@ hostname = wx.10086.cn
       log("\n⚠️ 没有抽奖次数");
       $notify("10086 转盘", "无抽奖次数", "任务可能已完成或暂无可做任务");
     }
-
     $done();
   }
 
@@ -151,8 +150,31 @@ hostname = wx.10086.cn
     return apiGet("/task/list?backUrl=" + backUrl + "&token=" + encodeURIComponent(tk));
   }
 
+  // 执行浏览任务（跟随 302 重定向到目标页面，才算真正完成）
   function doBrowseTask(taskId) {
-    return apiGet("/task/startBrowse/" + taskId);
+    try {
+      var r = $task.fetch({
+        url: BASE + "/task/startBrowse/" + taskId,
+        method: "GET",
+        headers: HEADERS,
+        timeout: 15,
+        "auto-redirect": false
+      });
+      var loc = r.headers["Location"];
+      if (loc) {
+        log("    跟随重定向: " + loc.substring(0, 60) + "...");
+        $task.fetch({ url: loc, method: "GET", headers: HEADERS, timeout: 10 });
+        log("    ✓ 浏览任务完成");
+      } else if (r.statusCode === 200) {
+        log("    ✓ 浏览任务已处理");
+      } else {
+        log("    ⚠️ 浏览任务返回 " + r.statusCode);
+      }
+      return { success: true };
+    } catch (e) {
+      log("    浏览任务失败: " + e.message);
+      return null;
+    }
   }
 
   function lotteryDraw() {
