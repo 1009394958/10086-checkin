@@ -1,3 +1,4 @@
+// version=20260628.1
 /*
 10086 转盘 Token — for Quantumult X
 ====================================
@@ -13,7 +14,7 @@ const TOKEN_KEY = "10086_qwhd_token";
 const COOKIE_KEY = "10086_qwhd_cookie";
 (function () {
   if (typeof $response !== "undefined" && $response) {
-    console.log("===== 10086 Token(response) =====");
+    console.log("===== 10086 Token(response) ====");
     try {
       var body = typeof $response.body === "string" ? $response.body : JSON.stringify($response.body);
       var d = JSON.parse(body);
