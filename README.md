@@ -1,113 +1,185 @@
 # 中国移动每日签到 (Quantumult X)
 
 > 基于 Quantumult X 的中国移动 App 每日自动签到脚本
+>
+> 先查剩余次数 → 完成任务得次数 → 执行抽奖
 
-## 功能
+## 快速开始（5分钟配置）
 
-- 自动捕获中国移动App登录凭证（Cookie、x-token）
-- 自动捕获加密请求体
-- 每日定时签到
-- 签到结果系统通知
+---
 
-## 使用前提
+### 第一步：下载三个脚本到本地
 
-1. iOS 设备已安装 [Quantumult X](https://apps.apple.com/app/quantumult-x/id1443988620)
-2. 已安装中国移动 App 并成功登录
-3. 已在 Quantumult X 中配置 MITM 证书
+将以下3个文件保存到 **Quantumult X → 设置 → 文件 → Scripts** 文件夹：
 
-## 文件说明
+| 文件 | 下载链接 |
+|------|----------|
+| `10086_cookie.js` | [右键另存为](https://raw.githubusercontent.com/1009394958/10086-checkin/main/10086_cookie.js) |
+| `10086_body.js` | [右键另存为](https://raw.githubusercontent.com/1009394958/10086-checkin/main/10086_body.js) |
+| `10086_checkin.js` | [右键另存为](https://raw.githubusercontent.com/1009394958/10086-checkin/main/10086_checkin.js) |
 
-| 文件 | 模式 | 功能 |
-|------|------|------|
-| `10086_cookie.js` | `script-request-header` | 捕获Cookie和x-token（无阻塞）|
-| `10086_body.js` | `script-request-body` | 捕获加密请求体 |
-| `10086_checkin.js` | `task_local` | 定时执行签到 |
-| `boxjs.json` | BoxJS | 面板管理登录状态 |
-| `config/quantumultx.conf` | 配置模板 | 完整配置参考 |
+> **务必**：不要使用远程URL，全部下载到本地，否则会 timeout 超时！
 
-## 安装步骤
+---
 
-### 1. 将脚本保存到本地
+### 第二步：添加 Quantumult X 配置
 
-将以下脚本文件下载到 Quantumult X 的 Scripts 文件夹：
-- [10086_cookie.js](https://raw.githubusercontent.com/1009394958/10086-checkin/main/10086_cookie.js)
-- [10086_body.js](https://raw.githubusercontent.com/1009394958/10086-checkin/main/10086_body.js)
+点开 Quantumult X → 设置 → 配置文件 → 编辑配置，在 `[rewrite_local]` 和 `[task_local]` 和 `[mitm]` 区域分别粘贴以下内容：
 
-> **注意**: 推荐使用本地脚本（将文件保存到 `Quantumult X/Scripts/` 目录），避免远程加载超时。
-
-### 2. 添加Quantumult X配置
+**1. 找到 `[rewrite_local]` 区域，粘贴：**
 
 ```ini
 [rewrite_local]
-; ========== Cookie/Token 捕获（请求头模式，无阻塞）==========
+; ===== 10086_cookie.js - 捕获登录凭证 =====
 ^https:\/\/client\.app\.coc\.10086\.cn\/biz-orange\/LN\/uamonekeylogin\/autoLogin url script-request-header 10086_cookie.js
 ^https:\/\/clientaccess\.10086\.cn\/biz-orange\/BN\/userInformationService\/getUserInformation url script-request-header 10086_cookie.js
 ^https:\/\/client\.app\.coc\.10086\.cn\/leadeon-abilityopen-biz\/BN\/obtainToken\/getBigNetToken url script-request-header 10086_cookie.js
 
-; ========== 加密请求体捕获（请求体模式）==========
+; ===== 10086_body.js - 捕获加密请求体 =====
 ^https:\/\/client\.app\.coc\.10086\.cn\/biz-orange\/LN\/uamonekeylogin\/autoLogin url script-request-body 10086_body.js
 ^https:\/\/clientaccess\.10086\.cn\/biz-orange\/BN\/userInformationService\/getUserInformation url script-request-body 10086_body.js
 ^https:\/\/client\.app\.coc\.10086\.cn\/leadeon-abilityopen-biz\/BN\/obtainToken\/getBigNetToken url script-request-body 10086_body.js
 ^https:\/\/clientaccess\.10086\.cn\/biz-orange\/BN\/scoreQueryService\/getScoreQuery url script-request-body 10086_body.js
+```
 
+**2. 找到 `[task_local]` 区域，粘贴：**
+
+```ini
 [task_local]
-0 9 * * * https://raw.githubusercontent.com/1009394958/10086-checkin/main/10086_checkin.js, tag=中国移动签到, enabled=true
+0 9 * * * 10086_checkin.js, tag=中国移动签到, enabled=true
+```
 
+**3. 找到 `[mitm]` 区域，粘贴：**
+
+```ini
 [mitm]
-hostname = client.app.coc.10086.cn, clientaccess.10086.cn
+hostname = client.app.coc.10086.cn, clientaccess.10086.cn, wx.10086.cn
 ```
 
-### 3. 捕获登录凭证
+---
 
-1. 确保 Quantumult X 已开启（VPN 连接状态）
-2. **打开中国移动 App**
-3. 正常使用App，等待弹窗提示 "Cookie/Token 捕获成功"
-4. 首次捕获成功后即可关闭 App
+### 第三步：捕获登录凭证
 
-### 4. 验证签到
+1. 确保 **Quantumult X VPN 已开启**（状态栏显示VPN图标）
+2. **打开中国移动 App**，等待加载到首页
+3. 观察 Quantumult X 的日志弹窗，如果出现 `捕获` 字样说明成功
+4. 首次捕获成功后关闭 App 即可
 
-- 打开 Quantumult X → 「设置」→「构造请求」→「任务」
-- 找到「中国移动签到」，点击运行
-- 查看日志确认执行结果
+---
 
-## 技术原理
+### 第四步：运行签到
 
-中国移动 App 的 API 使用自定义加密协议，所有请求体经过加密传输。
+1. 打开 Quantumult X
+2. 底部 → 「设置」→ 顶部「构造请求」
+3. 选择「任务」标签
+4. 找到「中国移动签到」，点击 ▶ 运行
+5. 查看运行日志确认结果
 
-### 请求头鉴权体系
+---
 
-| 请求头 | 说明 |
-|--------|------|
-| `x-qen` | 加密协议版本（常见值: 14, 2）|
-| `x-sign` | 请求签名（MD5格式）|
-| `x-nonce` | 8位随机数 |
-| `x-token` | 用户令牌（每次响应通过`r-token`头轮换）|
-| `x-time` | 13位时间戳 |
-| `xs` | 校验参数 |
+## 查看日志
 
-### 三脚本协作流程
+Quantumult X 中查看详细日志的位置：
+
+**路径：** 设置 → 构造请求 → 日志
+
+日志中你将会看到：
 
 ```
-1. 10086_cookie.js (request-header)
-   └─ 拦截请求头，捕获 Cookie + x-token → 存入 $prefs
+════════════════════════════════════════════
+  中国移动每日签到脚本 v2.2
+════════════════════════════════════════════
+  开始时间: 2026/6/28 09:00:00
+  运行模式: task模式 → 执行签到流程
 
-2. 10086_body.js (request-body)
-   └─ 拦截请求体，捕获 加密body → 存入 $prefs
+  ▶ 【步骤0】检查登录凭证
+    ✓ Cookie → JSESSIONID=xxx; UID=xxx... (长度: 120)
+    ✓ x-token → abc123...
+    ✗ QWHD Cookie → 未捕获（不影响原生API）
 
-3. 10086_checkin.js (task_local)
-   └─ 读取 $prefs 中的凭证，请求体重放 → 完成签到
+    方案首选: 幸运转转转 Web API
+    ✗ 缺少QWHD_COOKIE → 无法使用Web API，降级到原生API
+    获取方式: 打开一次幸运转转转页面，脚本会自动捕获
+
+    方案回退: 原生加密API
+  ▶ 【步骤1】调用getUserInformation验证登录
+    ✓ 加密请求体已就绪 → 1432 bytes
+    ⇄ getUserInformation: HTTP 200, body=108B
+    ✓ 登录验证通过
+════════════════════════════════════════════
+  脚本执行完毕
+════════════════════════════════════════════
 ```
 
-> 由于加密算法未公开，脚本采用"请求体重放"策略，
-> 即原样发送从 App 捕获的加密请求体。
+---
 
-## Troubleshooting
+## 日志标识说明
 
-| 问题 | 原因 | 解决 |
-|------|------|------|
-| `timeout` 错误 | 远程脚本加载超时 | 将脚本下载到本地使用 |
-| 未捕获到凭证 | MITM证书未信任 | 检查Quantumult X的MITM配置 |
-| 缺少加密请求体 | body脚本未触发 | 重新打开中国移动App |
+| 标识 | 含义 |
+|------|------|
+| ▶ 【步骤N】 | 当前执行到第几步 |
+| ✓ | 成功 |
+| ✗ | 失败 |
+| ℹ | 提示信息 |
+| 📦 | 数据内容 |
+| ⇄ | API请求/响应 |
+| ═════ | 阶段分隔线 |
+| ─── | 子任务分隔线 |
+
+---
+
+## 如何获取 QWHD_COOKIE（使用Web API需要）
+
+如果想让脚本走 Web API（幸运转转转，可解析剩余次数和抽奖结果），需要捕获 QWHD Cookie：
+
+1. 在 Quantumult X 的 MITM 中添加 `wx.10086.cn`（上面第三步已添加）
+2. 打开中国移动App → 进入「幸运转转转」活动页面
+3. 转盘页面加载时，脚本会自动捕获 `QWHD_SESSION_TOKEN` 存入 `10086_qwhd_cookie`
+
+> 如果不需要幸运转转转功能，只做"签到有礼"基础签到，可以不配置这一步。
+
+---
+
+## 文件结构
+
+```
+10086-checkin/
+├── 10086_cookie.js       v1.1  捕获Cookie/Tokens（script-request-header，无阻塞）
+├── 10086_body.js         v1.0  捕获加密请求体（script-request-body）
+├── 10086_checkin.js      v2.2  签到主脚本（task，带详细日志）
+│                         ├── 阶段1: 查剩余抽奖次数
+│                         ├── 阶段2: 完成任务赚次数
+│                         └── 阶段3: 执行抽奖
+├── config/quantumultx.conf   完整配置模板
+├── boxjs.json               BoxJS面板管理
+└── README.md                本文件
+```
+
+---
+
+## 技术背景
+
+### 中国移动API加密体系
+
+所有 `client.app.coc.10086.cn` 和 `clientaccess.10086.cn` 的请求均使用AES加密：
+
+- 请求/响应体以 `ykytces3` 开头的密文
+- 请求头包含 `x-sign`（签名）、`x-nonce`（随机数）、`x-token`（令牌，每次响应轮换）、`x-time`（时间戳）
+- `x-token` 通过响应头 `r-token` 定期轮换
+
+### 幸运转转转 Web API（无加密）
+
+`wx.10086.cn/qwhdhub/` 域下的API使用标准JSON，可正常解析：
+
+| API | 方法 | 功能 |
+|-----|------|------|
+| `/lottery/remain` | POST | 查询剩余抽奖次数 |
+| `/task/pop` | GET | 获取任务列表 |
+| `/jump/startGame` | POST | 执行抽奖 |
+| `/jump/endGame` | POST | 结束本轮游戏 |
+| `/jump/currentPhase` | POST | 获取活动阶段信息 |
+
+---
 
 ## License
 
