@@ -229,7 +229,9 @@ hostname = wx.10086.cn
         log("  ⚠ Token 为空，无法获取任务列表");
         log("  提示: 请在 App 中打开转盘页面以生成 Token，或确认 /user/info 返回了 loginUid");
       }
-      var tasksData = await apiGet("/task/list?backUrl=" + encodeURIComponent(BASE + "/turntable/1025041514") + "&token=" + encodeURIComponent(tk || ""));
+      // token 必须嵌在 backUrl 内，API 从 backUrl 中解析 token
+      var backUrl = BASE + "/turntable/1025041514" + (tk ? "?token=" + encodeURIComponent(tk) : "");
+      var tasksData = await apiGet("/task/list?backUrl=" + encodeURIComponent(backUrl));
       if (tasksData && tasksData.code === "SUCCESS" && tasksData.data) {
         var list = Array.isArray(tasksData.data) ? tasksData.data : [];
         log("  共 " + list.length + " 个任务:");
