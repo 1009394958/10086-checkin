@@ -1,0 +1,60 @@
+{
+  "id": "10086.checkin",
+  "name": "中国移动签到",
+  "description": "中国移动每日签到BoxJS配置",
+  "author": "github.com/1009394958",
+  "icon": "https://www.10086.cn/favicon.ico",
+  "apps": [
+    {
+      "id": "10086_checkin",
+      "name": "中国移动签到",
+      "keys": [
+        "10086_cookie",
+        "10086_xtoken",
+        "10086_rtoken",
+        "10086_enc_body_auto",
+        "10086_enc_body_token",
+        "10086_enc_body_user",
+        "10086_last_update"
+      ],
+      "settings": [
+        {
+          "id": "10086_cookie",
+          "name": "登录Cookie",
+          "val": "",
+          "type": "textarea",
+          "desc": "从中国移动App捕获的Cookie，包含UID和JSESSIONID"
+        },
+        {
+          "id": "10086_xtoken",
+          "name": "x-token",
+          "val": "",
+          "type": "textarea",
+          "desc": "加密通信Token（每次响应通过r-token轮换）"
+        },
+        {
+          "id": "10086_rtoken",
+          "name": "r-token",
+          "val": "",
+          "type": "text",
+          "desc": "最新的响应Token，用于刷新x-token"
+        },
+        {
+          "id": "10086_enc_body_auto",
+          "name": "autoLogin加密体",
+          "val": "",
+          "type": "textarea",
+          "desc": "autoLogin请求的加密body"
+        },
+        {
+          "id": "10086_enc_body_token",
+          "name": "getBigNetToken加密体",
+          "val": "",
+          "type": "textarea",
+          "desc": "getBigNetToken请求的加密body"
+        }
+      ],
+      "author": "github.com/1009394958"
+    }
+  ]
+}
